@@ -1,17 +1,9 @@
 /*
-Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Copyright 2017 Gamecloud, Inc. or its affiliates. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
-    http://aws.amazon.com/apache2.0/
-
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-    
-    This file is what connects to chat and parses messages as they come along. The chat client connects via a 
-    Web Socket to Twitch chat. The important part events are onopen and onmessage.
 */
 
-var chatClient = function chatClient(options){
+var chatClient = function chatClient(options) {
     this.username = options.username;
     this.password = options.password;
     this.channel = options.channel;
@@ -20,7 +12,7 @@ var chatClient = function chatClient(options){
     this.port = 443;
 }
 
-chatClient.prototype.open = function open(){
+chatClient.prototype.open = function open() {
     this.webSocket = new WebSocket('wss://' + this.server + ':' + this.port + '/', 'irc');
 
     this.webSocket.onmessage = this.onMessage.bind(this);
@@ -29,31 +21,30 @@ chatClient.prototype.open = function open(){
     this.webSocket.onopen = this.onOpen.bind(this);
 };
 
-chatClient.prototype.onError = function onError(message){
+chatClient.prototype.onError = function onError(message) {
     console.log('Error: ' + message);
 };
 
 /* This is an example of a leaderboard scoring system. When someone sends a message to chat, we store 
    that value in local storage. It will show up when you click Populate Leaderboard in the UI. 
 */
-chatClient.prototype.onMessage = function onMessage(message){
-    if(message !== null){
+chatClient.prototype.onMessage = function onMessage(message) {
+    if (message !== null) {
         var parsed = this.parseMessage(message.data);
 
-        if(parsed !== null){
+        if (parsed !== null) {
             userPoints = localStorage.getItem(parsed.username);
 
-            if(userPoints === null){
+            if (userPoints === null) {
                 localStorage.setItem(parsed.username, 10);
-            }
-            else {
+            } else {
                 localStorage.setItem(parsed.username, parseFloat(userPoints) + 0.25);
             }
         }
     }
 };
 
-chatClient.prototype.onOpen = function onOpen(){
+chatClient.prototype.onOpen = function onOpen() {
     var socket = this.webSocket;
 
     if (socket !== null && socket.readyState === 1) {
@@ -66,12 +57,12 @@ chatClient.prototype.onOpen = function onOpen(){
     }
 };
 
-chatClient.prototype.onClose = function onClose(){
+chatClient.prototype.onClose = function onClose() {
     console.log('Disconnected from the chat server.');
 };
 
-chatClient.prototype.close = function close(){
-    if(this.webSocket){
+chatClient.prototype.close = function close() {
+    if (this.webSocket) {
         this.webSocket.close();
     }
 };
@@ -96,12 +87,12 @@ chatClient.prototype.parseMessage = function parseMessage(rawMessage) {
         username: null
     };
 
-    if(rawMessage[0] === '@'){
+    if (rawMessage[0] === '@') {
         var tagIndex = rawMessage.indexOf(' '),
-        userIndex = rawMessage.indexOf(' ', tagIndex + 1),
-        commandIndex = rawMessage.indexOf(' ', userIndex + 1),
-        channelIndex = rawMessage.indexOf(' ', commandIndex + 1),
-        messageIndex = rawMessage.indexOf(':', channelIndex + 1);
+            userIndex = rawMessage.indexOf(' ', tagIndex + 1),
+            commandIndex = rawMessage.indexOf(' ', userIndex + 1),
+            channelIndex = rawMessage.indexOf(' ', commandIndex + 1),
+            messageIndex = rawMessage.indexOf(':', channelIndex + 1);
 
         parsedMessage.tags = rawMessage.slice(0, tagIndex);
         parsedMessage.username = rawMessage.slice(tagIndex + 2, rawMessage.indexOf('!'));
@@ -110,7 +101,7 @@ chatClient.prototype.parseMessage = function parseMessage(rawMessage) {
         parsedMessage.message = rawMessage.slice(messageIndex + 1);
     }
 
-    if(parsedMessage.command !== 'PRIVMSG'){
+    if (parsedMessage.command !== 'PRIVMSG') {
         parsedMessage = null;
     }
 
@@ -118,17 +109,17 @@ chatClient.prototype.parseMessage = function parseMessage(rawMessage) {
 }
 
 /* Builds out the top 10 leaderboard in the UI using a jQuery template. */
-function buildLeaderboard(){
+function buildLeaderboard() {
     var chatKeys = Object.keys(localStorage),
         outputTemplate = $('#entry-template').html(),
         leaderboard = $('.leaderboard-output'),
-        sortedData = chatKeys.sort(function(a,b){
-            return localStorage[b]-localStorage[a]
+        sortedData = chatKeys.sort(function(a, b) {
+            return localStorage[b] - localStorage[a]
         });
 
     leaderboard.empty();
 
-    for(var i = 0; i < 10; i++){
+    for (var i = 0; i < 10; i++) {
         var viewerName = sortedData[i],
             template = $(outputTemplate);
 
